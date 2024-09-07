@@ -1,0 +1,110 @@
+    • Creación de la base de datos:
+
+CREATE DATABASE prueba_tecnica1;
+USE prueba_tecnica1;
+
+    • Creación de tablas con relaciones uno a muchos y muchos a muchos, e implementación de constraints:
+
+-- Tabla de usuarios (uno a muchos con Pedidos)
+CREATE TABLE Usuarios (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(100) NOT NULL,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  ciudad VARCHAR(100) DEFAULT 'Desconocida'
+);
+
+-- Tabla de pedidos (uno a muchos con Usuarios)
+CREATE TABLE Pedidos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  fecha DATE NOT NULL,
+  usuario_id INT,
+  FOREIGN KEY (usuario_id) REFERENCES Usuarios(id)
+);
+
+-- Tabla de productos (muchos a muchos con Pedidos)
+CREATE TABLE Productos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(100) NOT NULL UNIQUE,
+  precio DECIMAL(10, 2) NOT NULL DEFAULT 0.00
+);
+
+-- Tabla intermedia para la relación muchos a muchos entre Pedidos y Productos
+CREATE TABLE Pedido_Producto (
+  pedido_id INT,
+  producto_id INT,
+  cantidad INT NOT NULL DEFAULT 1,
+  PRIMARY KEY (pedido_id, producto_id),
+  FOREIGN KEY (pedido_id) REFERENCES Pedidos(id),
+  FOREIGN KEY (producto_id) REFERENCES Productos(id)
+);
+
+
+
+
+
+
+
+    • Consultas SQL 
+
+INNER JOIN:
+SELECT Pedidos.id, Usuarios.nombre, Pedidos.fecha
+FROM Pedidos
+INNER JOIN Usuarios ON Pedidos.usuario_id = Usuarios.id;
+
+LEFT JOIN:
+SELECT Usuarios.nombre, Pedidos.fecha
+FROM Usuarios
+LEFT JOIN Pedidos ON Usuarios.id = Pedidos.usuario_id;
+
+UNION:
+SELECT nombre FROM Usuarios
+UNION
+SELECT nombre FROM Productos;
+
+CASE: lo usamos para mostrar si un usuario ha hecho pedidos o no.
+SELECT Usuarios.nombre,
+  CASE
+    WHEN Pedidos.id IS NOT NULL THEN 'Ha realizado pedidos'
+    ELSE 'No ha realizado pedidos'
+  END AS estado_pedido
+FROM Usuarios
+LEFT JOIN Pedidos ON Usuarios.id = Pedidos.usuario_id;
+
+
+    • Generación de un script para cargar al menos 5 registros en cada tabla desarrollada:
+      
+-- Insertar usuarios
+INSERT INTO Usuarios (nombre, email, ciudad)
+VALUES 
+  ('Jair Hernandez', 'jair@example.com', 'Bogotá'),
+  ('Ana López', 'ana@example.com', 'Medellín'),
+  ('Carlos Gómez', 'carlos@example.com', 'Cali'),
+  ('María Fernández', 'maria@example.com', 'Cartagena'),
+  ('Luis Martínez', 'luis@example.com', 'Barranquilla');
+
+-- Insertar pedidos
+INSERT INTO Pedidos (fecha, usuario_id)
+VALUES
+  ('2024-09-01', 1),
+  ('2024-09-02', 2),
+  ('2024-09-03', 3),
+  ('2024-09-04', 4),
+  ('2024-09-05', 5);
+
+-- Insertar productos
+INSERT INTO Productos (nombre, precio)
+VALUES
+  ('Laptop', 1200.00),
+  ('Teléfono', 800.00),
+  ('Tablet', 400.00),
+  ('Monitor', 250.00),
+  ('Teclado', 50.00);
+
+-- Insertar en la tabla intermedia pedido_Producto 
+INSERT INTO Pedido_Producto (pedido_id, producto_id, cantidad)
+VALUES
+  (1, 1, 1), -- Juan compró 1 Laptop
+  (2, 2, 2), -- Ana compró 2 Teléfonos
+  (3, 3, 1), -- Carlos compró 1 Tablet
+  (4, 4, 1), -- María compró 1 Monitor
+  (5, 5, 3); -- Luis compró 3 Teclados
